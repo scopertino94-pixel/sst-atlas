@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SST-ATLAS</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#0a0e1a;color:#c9d6e3;font-family:'Segoe UI',sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+
+    /* ── TOP NAV ── */
+    nav{background:#0d1220;border-bottom:1px solid #1a2540;padding:0 24px;display:flex;align-items:center;height:56px;flex-shrink:0;}
+    .nav-logo{display:flex;align-items:center;gap:12px;margin-right:auto;}
+    .nav-logo-icon{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#00b4d8,#0077b6);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.8rem;color:#fff;}
+    .nav-logo-text h1{font-size:1.1rem;font-weight:700;color:#00d4ff;letter-spacing:2px;}
+    .nav-logo-text p{font-size:0.65rem;color:#4a6080;letter-spacing:1px;text-transform:uppercase;}
+    .nav-links{display:flex;gap:4px;}
+    .nav-link{padding:6px 16px;border-radius:4px;font-size:0.8rem;font-weight:600;letter-spacing:1px;cursor:pointer;color:#4a6080;border:1px solid transparent;text-transform:uppercase;}
+    .nav-link.active{color:#00d4ff;border-color:#00d4ff22;background:#00d4ff0a;}
+    .nav-link:hover{color:#00d4ff;background:#00d4ff0a;}
+    #api-dot{width:8px;height:8px;border-radius:50%;background:#f85149;margin-left:16px;flex-shrink:0;}
+    #api-dot.online{background:#00d4ff;box-shadow:0 0 6px #00d4ff88;}
+
+    /* ── MAIN LAYOUT ── */
+    .app-body{display:flex;flex:1;overflow:hidden;}
+
+    /* ── SIDEBAR ── */
+    aside{width:270px;min-width:270px;background:#0d1220;border-right:1px solid #1a2540;display:flex;flex-direction:column;overflow-y:auto;}
+    .sidebar-tabs{display:flex;border-bottom:1px solid #1a2540;}
+    .stab{flex:1;padding:14px 0;text-align:center;font-size:0.8rem;font-weight:600;letter-spacing:1px;color:#4a6080;cursor:pointer;border-bottom:2px solid transparent;text-transform:uppercase;}
+    .stab.active{color:#00d4ff;border-bottom-color:#00d4ff;}
+    .stab:hover{color:#00d4ff;}
+    .sidebar-panel{display:none;padding:20px 16px;flex:1;}
+    .sidebar-panel.active{display:block;}
+
+    /* ── SIDEBAR FORM ELEMENTS ── */
+    .section-label{font-size:0.65rem;font-weight:700;letter-spacing:2px;color:#4a6080;text-transform:uppercase;margin-bottom:10px;margin-top:18px;}
+    .section-label:first-child{margin-top:0;}
+    .section-desc{font-size:0.72rem;color:#3a5070;margin-bottom:12px;line-height:1.5;}
+    select,input[type=date],input[type=number],input[type=text]{
+      background:#080d1a;border:1px solid #1a2540;color:#c9d6e3;
+      padding:8px 10px;border-radius:4px;width:100%;font-size:0.82rem;
+      outline:none;
+    }
+    select:focus,input:focus{border-color:#00d4ff44;}
+    .form-row{display:flex;gap:8px;margin-bottom:10px;}
+    .form-row>*{flex:1;}
+    .form-group{margin-bottom:10px;}
+
+    /* ── TOGGLE SWITCH ── */
+    .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #0f1830;}
+    .toggle-row:last-child{border-bottom:none;}
+    .toggle-label{font-size:0.8rem;color:#8aa0b8;}
+    .switch{position:relative;width:36px;height:20px;flex-shrink:0;}
+    .switch input{opacity:0;width:0;height:0;}
+    .slider{position:absolute;inset:0;background:#1a2540;border-radius:20px;cursor:pointer;transition:0.3s;}
+    .slider:before{content:'';position:absolute;width:14px;height:14px;left:3px;bottom:3px;background:#4a6080;border-radius:50%;transition:0.3s;}
+    input:checked+.slider{background:#00d4ff33;}
+    input:checked+.slider:before{background:#00d4ff;transform:translateX(16px);}
+
+    /* ── EVENT ROWS ── */
+    .event-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
+    .event-row select{flex:1.2;}
+    .event-row input{flex:1;}
+    .event-remove{background:none;border:1px solid #1a2540;color:#f85149;border-radius:4px;padding:5px 8px;cursor:pointer;font-size:0.8rem;flex-shrink:0;}
+    .event-remove:hover{background:#f8514922;}
+    .add-event-btn{width:100%;background:none;border:1px dashed #1a2540;color:#4a6080;padding:7px;border-radius:4px;cursor:pointer;font-size:0.78rem;margin-top:4px;letter-spacing:1px;}
+    .add-event-btn:hover{border-color:#00d4ff44;color:#00d4ff;}
+
+    /* ── GENERATE BUTTON ── */
+    .gen-btn-wrap{padding:16px;border-top:1px solid #1a2540;margin-top:auto;}
+    .gen-btn{width:100%;background:linear-gradient(135deg,#00b4d8,#0077b6);color:#fff;border:none;padding:12px;border-radius:6px;font-size:0.85rem;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .gen-btn:hover{background:linear-gradient(135deg,#00d4ff,#0099cc);}
+    .gen-btn:disabled{background:#1a2540;color:#3a5070;cursor:not-allowed;}
+    .gen-btn-sub{font-size:0.65rem;color:#3a5070;text-align:center;margin-top:6px;letter-spacing:0.5px;}
+
+    /* ── OUTPUT AREA ── */
+    main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .output-topbar{background:#0d1220;border-bottom:1px solid #1a2540;padding:0 20px;display:flex;align-items:center;gap:12px;height:40px;flex-shrink:0;}
+    .output-label{font-size:0.65rem;font-weight:700;letter-spacing:2px;color:#4a6080;text-transform:uppercase;}
+    .breadcrumb{background:#0a1628;border:1px solid #1a3060;color:#00d4ff;padding:3px 12px;border-radius:3px;font-size:0.72rem;font-weight:600;letter-spacing:1px;}
+    .dl-btn{margin-left:auto;background:none;border:1px solid #1a2540;color:#4a6080;padding:4px 12px;border-radius:4px;font-size:0.72rem;cursor:pointer;letter-spacing:1px;}
+    .dl-btn:hover{border-color:#00d4ff44;color:#00d4ff;}
+    .dl-btn.visible{display:inline-block;}
+    .output-content{flex:1;overflow-y:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px;}
+    .placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;color:#1a2540;gap:16px;}
+    .placeholder-icon{font-size:4rem;}
+    .placeholder h2{font-size:1.1rem;color:#2a3a50;letter-spacing:1px;}
+    .placeholder p{font-size:0.8rem;color:#1a2a40;text-align:center;max-width:400px;line-height:1.6;}
+    .placeholder .data-info{font-size:0.7rem;color:#152030;margin-top:8px;}
+    .output-img{max-width:100%;max-height:calc(100vh - 100px);object-fit:contain;border-radius:6px;box-shadow:0 4px 32px #00000088;}
+    .spinner-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;gap:16px;color:#4a6080;font-size:0.8rem;letter-spacing:1px;}
+    .spinner{width:40px;height:40px;border:3px solid #1a2540;border-top-color:#00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .error-bar{background:#2a0a0a;border:1px solid #f8514944;color:#f85149;padding:12px 20px;font-size:0.82rem;font-family:monospace;display:flex;align-items:center;gap:12px;}
+  </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">S</div>
+    <div class="nav-logo-text">
+      <h1>SST-ATLAS</h1>
+      <p>Sea Surface Temperature Analysis</p>
+    </div>
+  </div>
+  <div class="nav-links">
+    <div class="nav-link active">Products</div>
+    <div class="nav-link">About</div>
+  </div>
+  <div id="api-dot" title="API Status"></div>
+</nav>
+
+<!-- APP BODY -->
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="sidebar-tabs">
+      <div class="stab active" onclick="switchTab('oisst')">OISST</div>
+      <div class="stab" onclick="switchTab('ersst')">ERSSTv6</div>
+    </div>
+
+    <!-- OISST SIDEBAR -->
+    <div class="sidebar-panel active" id="sp-oisst">
+      <div class="section-label">Analysis Mode</div>
+      <div class="form-group">
+        <select id="oisst-mode" onchange="updateOISSTMode()">
+          <option value="single">Single – SST Anomaly</option>
+          <option value="difference">Difference</option>
+          <option value="records">Records</option>
+          <option value="percentile_rank">Percentile Rank</option>
+          <option value="trend">Trend</option>
+          <option value="multi_year_panel">Multi-Year Panel</option>
+        </select>
+        <div id="oisst-mode-desc" style="font-size:0.7rem;color:#3a5070;margin-top:5px;">Standard SST anomaly map for a single date.</div>
+      </div>
+
+      <div class="section-label">Date &amp; Region</div>
+      <div class="form-group">
+        <div style="font-size:0.72rem;color:#4a6080;margin-bottom:4px;">Target Date <span id="date-help" style="color:#1a3050;">ℹ</span></div>
+        <input type="date" id="oisst-date" value="2026-04-28" min="1982-01-01" max="2026-12-31"/>
+      </div>
+      <div class="form-group" id="baseline-group" style="display:none;">
+        <div style="font-size:0.72rem;color:#4a6080;margin-bottom:4px;">Baseline Date</div>
+        <input type="date" id="oisst-baseline" value="2015-04-18" min="1982-01-01" max="2026-12-31"/>
+      </div>
+      <div class="form-group">
+        <div style="font-size:0.72rem;color:#4a6080;margin-bottom:4px;">Region</div>
+        <select id="oisst-region">
+          <option value="north_atlantic">North Atlantic</option>
+          <option value="custom">E/C Pacific (Custom)</option>
+          <option value="global">Global</option>
+          <option value="pacific">Pacific</option>
+          <option value="indian">Indian Ocean</option>
+        </select>
+      </div>
+
+      <div class="section-label">Display Options</div>
+      <div class="form-group">
+        <div style="font-size:0.72rem;color:#4a6080;margin-bottom:4px;">Theme</div>
+        <select id="oisst-theme">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Remove Global Mean (RSST)</span>
+        <label class="switch"><input type="checkbox" id="oisst-rmgm" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Show Oceanic Indices</span>
+        <label class="switch"><input type="checkbox" id="oisst-indices"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Show 10/90th Pct Contours</span>
+        <label class="switch"><input type="checkbox" id="oisst-pct"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Global Reference Inset</span>
+        <label class="switch"><input type="checkbox" id="oisst-inset"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <!-- ERSST SIDEBAR -->
+    <div class="sidebar-panel" id="sp-ersst">
+      <div class="section-label">Composite Events</div>
+      <div class="section-desc">Select one or more month/year events to composite. A sliding 30-year climatology prior to each year is used as the baseline.</div>
+      <div id="events-container">
+        <div class="event-row">
+          <select class="event-month">
+            <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option>
+            <option value="4">Apr</option><option value="5">May</option><option value="6">Jun</option>
+            <option value="7">Jul</option><option value="8">Aug</option><option value="9">Sep</option>
+            <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+          </select>
+          <input type="number" class="event-year" value="2015" min="1854" max="2026"/>
+          <button class="event-remove" onclick="removeEvent(this)">✕</button>
+        </div>
+      </div>
+      <button class="add-event-btn" onclick="addEvent()">+ Add Event</button>
+
+      <div class="section-label">Display Options</div>
+      <div class="form-group">
+        <div style="font-size:0.72rem;color:#4a6080;margin-bottom:4px;">Colormap</div>
+        <select id="ersst-colormap">
+          <option value="custom">Custom (Purple→Blue→White→Red→Pink)</option>
+          <option value="RdBu_r">RdBu_r</option>
+          <option value="seismic">Seismic</option>
+          <option value="coolwarm">Coolwarm</option>
+        </select>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Remove Global Mean</span>
+        <label class="switch"><input type="checkbox" id="ersst-rmgm" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Regional Anomaly Text Box</span>
+        <label class="switch"><input type="checkbox" id="ersst-textbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Regional Bounding Boxes</span>
+        <label class="switch"><input type="checkbox" id="ersst-boxes"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <!-- GENERATE BUTTON (always visible) -->
+    <div class="gen-btn-wrap">
+      <button class="gen-btn" id="gen-btn" onclick="generate()">
+        <span>▶</span> <span id="gen-btn-label">Generate Plot</span>
+      </button>
+      <div class="gen-btn-sub" id="gen-btn-sub">Data: NOAA OISST v2.1 (NCEI) · 1/4° daily · 1982–present</div>
+    </div>
+  </aside>
+
+  <!-- OUTPUT -->
+  <main>
+    <div class="output-topbar">
+      <span class="output-label">Output</span>
+      <div class="breadcrumb" id="breadcrumb">OISST · Single</div>
+      <button class="dl-btn" id="dl-btn" style="display:none" onclick="downloadImage()">↓ Download PNG</button>
+    </div>
+    <div class="output-content" id="output-content">
+      <div class="placeholder">
+        <div class="placeholder-icon">🗺</div>
+        <h2>Ready to Plot</h2>
+        <p>Configure the product settings in the sidebar and click <strong style="color:#00d4ff">Generate Plot</strong> to produce a high-resolution SST map.</p>
+        <div class="data-info">OISST: Daily 1/4° · 1982–present &nbsp;|&nbsp; ERSSTv6: Monthly 2° · 1854–present</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const API = 'http://localhost:8000';
+let currentTab = 'oisst';
+let lastImageUrl = null;
+
+const modeDescs = {
+  single: 'Standard SST anomaly map for a single date.',
+  difference: 'Anomaly difference between two dates.',
+  records: 'Record highs/lows relative to the full record.',
+  percentile_rank: 'Historical percentile rank for the target date.',
+  trend: 'Long-term SST trend over the full record.',
+  multi_year_panel: 'Side-by-side panel of multiple years.'
+};
+
+async function checkHealth(){
+  try{
+    const r=await fetch(`${API}/api/health`);
+    const d=await r.json();
+    if(d.status==='ok'){
+      document.getElementById('api-dot').classList.add('online');
+    }
+  }catch{
+    document.getElementById('api-dot').classList.remove('online');
+  }
+}
+
+function switchTab(name){
+  currentTab=name;
+  document.querySelectorAll('.stab').forEach((t,i)=>t.classList.toggle('active',['oisst','ersst'][i]===name));
+  document.querySelectorAll('.sidebar-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(`sp-${name}`).classList.add('active');
+  const btn=document.getElementById('gen-btn-label');
+  const sub=document.getElementById('gen-btn-sub');
+  if(name==='oisst'){
+    btn.textContent='Generate Plot';
+    sub.textContent='Data: NOAA OISST v2.1 (NCEI) · 1/4° daily · 1982–present';
+  } else {
+    btn.textContent='Generate Composite';
+    sub.textContent='Data: NOAA ERSSTv6 (NCEI) · 2° monthly · 1854–present';
+  }
+}
+
+function updateOISSTMode(){
+  const mode=document.getElementById('oisst-mode').value;
+  document.getElementById('oisst-mode-desc').textContent=modeDescs[mode]||'';
+  document.getElementById('baseline-group').style.display=mode==='difference'?'block':'none';
+  updateBreadcrumb();
+}
+
+function updateBreadcrumb(){
+  const tab=currentTab.toUpperCase();
+  const mode=currentTab==='oisst'
+    ? document.getElementById('oisst-mode').options[document.getElementById('oisst-mode').selectedIndex].text.split('–')[0].trim()
+    : 'Composite';
+  document.getElementById('breadcrumb').textContent=`${tab} · ${mode}`;
+}
+
+function addEvent(){
+  const c=document.getElementById('events-container');
+  const d=document.createElement('div');
+  d.className='event-row';
+  d.innerHTML=`
+    <select class="event-month">
+      <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option>
+      <option value="4">Apr</option><option value="5">May</option><option value="6">Jun</option>
+      <option value="7">Jul</option><option value="8">Aug</option><option value="9">Sep</option>
+      <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+    </select>
+    <input type="number" class="event-year" value="2024" min="1854" max="2026"/>
+    <button class="event-remove" onclick="removeEvent(this)">✕</button>`;
+  c.appendChild(d);
+}
+
+function removeEvent(btn){
+  if(document.querySelectorAll('.event-row').length>1) btn.parentElement.remove();
+}
+
+async function pollJob(job_id){
+  while(true){
+    await new Promise(r=>setTimeout(r,2000));
+    try{
+      const r=await fetch(`${API}/api/jobs/${job_id}`);
+      const d=await r.json();
+      if(d.status==='done'){
+        lastImageUrl=`${API}/api/jobs/${job_id}/image?t=${Date.now()}`;
+        document.getElementById('output-content').innerHTML=`<img class="output-img" src="${lastImageUrl}"/>`;
+        document.getElementById('dl-btn').style.display='inline-block';
+        document.getElementById('gen-btn').disabled=false;
+        return;
+      } else if(d.status==='error'){
+        const msg=d.error||'Unknown error. Check server console.';
+        document.getElementById('output-content').innerHTML=`<div class="error-bar">⚠ Failed to generate plot: ${msg}</div>`;
+        document.getElementById('gen-btn').disabled=false;
+        return;
+      }
+    }catch(e){
+      document.getElementById('output-content').innerHTML=`<div class="error-bar">⚠ Failed to submit job: ${e.message} Is the backend running? Start it with: cd backend &amp;&amp; uvicorn main:app --reload</div>`;
+      document.getElementById('gen-btn').disabled=false;
+      return;
+    }
+  }
+}
+
+async function generate(){
+  const btn=document.getElementById('gen-btn');
+  btn.disabled=true;
+  document.getElementById('dl-btn').style.display='none';
+  document.getElementById('output-content').innerHTML=`<div class="spinner-wrap"><div class="spinner"></div><span>Generating plot — this may take 15–60 seconds…</span></div>`;
+  updateBreadcrumb();
+
+  let endpoint, body;
+  if(currentTab==='oisst'){
+    const dateVal=document.getElementById('oisst-date').value;
+    const [year,month,day]=dateVal.split('-').map(Number);
+    const baseVal=document.getElementById('oisst-baseline').value;
+    const [by,bm,bd]=baseVal.split('-').map(Number);
+    endpoint='/api/generate/oisst';
+    body={
+      mode:document.getElementById('oisst-mode').value,
+      region:document.getElementById('oisst-region').value,
+      theme:document.getElementById('oisst-theme').value,
+      year,month,day,
+      baseline_date:`${bm}/${bd}/${by}`,
+      remove_global_mean:document.getElementById('oisst-rmgm').checked,
+      show_oceanic_indices:document.getElementById('oisst-indices').checked,
+      show_pct_overlay:document.getElementById('oisst-pct').checked,
+      show_inset_map:document.getElementById('oisst-inset').checked,
+    };
+  } else {
+    const events=[...document.querySelectorAll('.event-row')].map(row=>({
+      year:parseInt(row.querySelector('.event-year').value),
+      month:parseInt(row.querySelector('.event-month').value),
+    }));
+    endpoint='/api/generate/ersst';
+    body={events,region:'global',theme:'dark'};
+  }
+
+  try{
+    const r=await fetch(`${API}${endpoint}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    pollJob(d.job_id);
+  }catch(e){
+    document.getElementById('output-content').innerHTML=`<div class="error-bar">⚠ Failed to submit job: ${e.message} Is the backend running? Start it with: cd backend &amp;&amp; uvicorn main:app --reload</div>`;
+    btn.disabled=false;
+  }
+}
+
+function downloadImage(){
+  if(!lastImageUrl)return;
+  const a=document.createElement('a');
+  a.href=lastImageUrl;
+  a.download='sst-atlas-plot.png';
+  a.click();
+}
+
+document.getElementById('oisst-mode').addEventListener('change',updateOISSTMode);
+checkHealth();
+setInterval(checkHealth,10000);
+</script>
+</body>
+</html>

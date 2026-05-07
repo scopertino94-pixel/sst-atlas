@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+backend/scripts/ersst_v6_data/
+backend/oisst_cache/
+*.png
